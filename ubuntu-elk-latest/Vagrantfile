@@ -1,0 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+NNODES=6
+
+$script = <<-SCRIPT
+echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDGcT0ahJGx5Hc7o/k6r6lSwgb5/nBvsLRcXcnl+7F4EHYKVEWcfA2Nrkhvm8s7wsgFK0FBlLQ+VGkxtU9W+DLL5NTCUbUICOzes7wHQLskoaG3j+gUOIUFBPg4pZu4urWFPbTXOh8sVrYFXQLl0S9zIRXaAgYHRpYLYh3fR1P4Ms1NAgpCabH4InH7dNfyNjGJHkZCAueqD/kd7Ef7Lkaqh95epx+70K6rWCHP5XaFkqgzfKEo0pi5OxdPBznCFYnhjI189arVn0GgNiwIq6g4BAgzBIXv+HextRC2POHDBozvysdbF3IGtq9aZgl1ubOVPuSSqb48QkCoZnHoFuBxeTf/QVwhTikh8gxChekCYwqIh6p/4ZYfS8HyJupT9nF18cwmTFYUfWvZH7PXHWwaeOTUkEsD5fyJikPkS0WtUWvPIsRoucUwNa6ghf8nWkoRTHGzDw8Ellu8ihe27j5iqH+rzA5kTacTrN9VHJWCGkUa0GVkYw1Fz8ybcMz2duk=" >> /home/vagrant/.ssh/authorized_keys
+SCRIPT
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  (0..NNODES - 1).each do |i|
+    config.vm.define "elk-latest-ubuntu-#{i}" do |node|
+      #node.vm.box = "ubuntu/focal64"
+      node.vm.box = "ubuntu/jammy64"
+      node.vm.hostname = "elk-latest-ubuntu-#{i}"
+      config.vm.provider "virtualbox" do |v|
+          v.memory = 4096
+          v.cpus = 2
+      end
+      node.vm.network "private_network", ip: "192.168.26.12#{i}"
+      node.vm.provision "shell", inline: $script
+      node.vm.provision "shell", inline: "echo hello from node #{i}"
+    end
+  end
+end
