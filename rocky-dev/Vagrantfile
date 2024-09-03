@@ -1,3 +1,5 @@
+#Install follwoing plugin first!!
+# vagrant plugin install vagrant-hosts
 
 NODE_BASE_NAME = "elk-"
 IP_PREFIX = "192.168.30.12"
