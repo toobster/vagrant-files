@@ -1,0 +1,34 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+NNODES=3
+
+$script = <<-SCRIPT
+echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDGcT0ahJGx5Hc7o/k6r6lSwgb5/nBvsLRcXcnl+7F4EHYKVEWcfA2Nrkhvm8s7wsgFK0FBlLQ+VGkxtU9W+DLL5NTCUbUICOzes7wHQLskoaG3j+gUOIUFBPg4pZu4urWFPbTXOh8sVrYFXQLl0S9zIRXaAgYHRpYLYh3fR1P4Ms1NAgpCabH4InH7dNfyNjGJHkZCAueqD/kd7Ef7Lkaqh95epx+70K6rWCHP5XaFkqgzfKEo0pi5OxdPBznCFYnhjI189arVn0GgNiwIq6g4BAgzBIXv+HextRC2POHDBozvysdbF3IGtq9aZgl1ubOVPuSSqb48QkCoZnHoFuBxeTf/QVwhTikh8gxChekCYwqIh6p/4ZYfS8HyJupT9nF18cwmTFYUfWvZH7PXHWwaeOTUkEsD5fyJikPkS0WtUWvPIsRoucUwNa6ghf8nWkoRTHGzDw8Ellu8ihe27j5iqH+rzA5kTacTrN9VHJWCGkUa0GVkYw1Fz8ybcMz2duk=" >> /home/vagrant/.ssh/authorized_keys
+echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCkJrU/BHs8/ltSJ5kn5VKrKoqT8D4i3TW7KlQMN7QoW7ZTGIvp1IXDUYK+8Oik9HJUiM/vrpqMKv/cxzWBN+v/6WvHOzC9AYir0qp5vBEsfcMHYz2b/It8aeTU65GHiEJ1ZyyUG/fAMu66sL92ebeLCCp1C/jfR6zYsqJ0XAgeIV9rj6OLmt9ClMT6GjRFuSjBLGcFM2z+pfc4eQqwhkABUWpdH+wfzPz3AK1qwMDaGKuK1K37R1onbUr/hljNnbqW9kse4VP9Pd6Rfw86GrjjbDJl7F2xrPjLGnXsFPPfyVXh78weqYCBBMrwlvL5ckhyNYm8XsM87P2f3v5PREmcctAHofqtnLGvlvc2upaN3dajcT+xNfld1dKLcYIlUyJ1ph2dIvxjq5fXQP+vS3Qq3Ol8x53yvkWQMcISqUuuFNoJKbm51TCqiomMNAK4X5PyZ05efXHYxKrc6N4PwEDW+9pY2+08otfjCGG2+T5u5NlkNCaNZze5mD188Cjaqjk=" >> /home/vagrant/.ssh/authorized_keys
+SCRIPT
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  (0..NNODES - 1).each do |i|
+    config.vm.define "elk-#{i}" do |node|
+      node.vm.box = "generic/rocky9"
+      node.vm.hostname = "elk-#{i}"
+      config.vm.provider "virtualbox" do |v|
+          v.memory = 9216
+          v.cpus = 4
+      end
+      node.vm.network "private_network", ip: "192.168.30.12#{i}"
+      node.vm.provision "shell", inline: $script
+      node.vm.provision "shell", inline: "echo hello from node #{i}"
+      node.vm.provision :hosts do |provisioner|
+        provisioner.add_host '192.168.30.120', ['elk-0.log.shared-info-platform.ch', 'elk-0']
+        provisioner.add_host '192.168.30.121', ['elk-1.log.shared-info-platform.ch', 'ekl-1']
+        provisioner.add_host '192.168.30.122', ['elk-2.log.shared-info-platform.ch', 'elk-2']
+      end
+    end
+  end
+end
